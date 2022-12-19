@@ -2,7 +2,8 @@
 
 import asyncio
 import aiohttp
-from fastapi import FastAPI, Query, Request, Header, status
+from fastapi import FastAPI, Query, Request, Header
+from fastapi import status as httpcode
 from fastapi.exceptions import RequestValidationError # debug
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -23,10 +24,14 @@ re_date = re.compile("\d{4}-\d{2}-\d{2}")
 
 @app.get("/v1/query")
 async def task_get(
-        n: str = Query(None, description="query name")
+        n: str = Query(None,
+                       description="Query name, identify the query template.")
         ) -> dict:
     if n:
-        return S.gets(n)
+        try:
+            return [S.gets(n)]
+        except ValueError:
+            return JSONResponse(status_code=404, content={})
     else:
         return S.list()
 

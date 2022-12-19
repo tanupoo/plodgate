@@ -89,7 +89,7 @@ else:
     worker = worker_get
 
 threads_per_proc = split_even(opt.nb_reqs, opt.nb_procs)
-print(threads_per_proc)
+#print(threads_per_proc)
 
 results = []
 
@@ -104,12 +104,14 @@ else:
 t_end = time.time()
 
 # print result.
-print("len=", len(results))
 for i in results:
     code, msg = i
     # XXX need to check the code
-    for m in msg:
-        print("## {name}: {desc}\n{text}".format(**m))
+    if code == 200:
+        for m in msg:
+            print("## {name}: {desc}\n{text}".format(**m))
+    else:
+        print(f"code: {code}")
 
 
 print(t_end - t_start)
