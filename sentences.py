@@ -8,7 +8,7 @@ re_name = re.compile("^#%name:(.*)")
 re_desc = re.compile("^#%desc:(.*)")
 
 class QuerySentence(BaseModel):
-    name: str
+    name: str   # unique
     desc: Optional[str]
     text: str
 
@@ -43,25 +43,35 @@ class Sentences:
             # if not (sentence_list or sentence_repository):
             raise ValueError("Either sentence_list or sentence_repository is required.")
 
-    def title(self, tid):
+    def _gets(self, name):
         for x in self.S:
-            if x["id"] == tid:
-                return x["title"]
+            if x.name == name:
+                return x
         else:
-            raise ValueError("ERROR: no text found for id={tid}")
+            raise ValueError(f"ERROR: not found for name={name}")
 
-    def text(self, tid):
-        for x in self.S:
-            if x["id"] == tid:
-                return x["text"]
-        else:
-            raise ValueError("ERROR: no text found for id={tid}")
+    def title(self, name):
+        self._gets(name).title
 
-    def list(self, verbose=False):
+    def text(self, name):
+        self._gets(name).text
+
+    def print(self, name=None, verbose=False):
         if verbose:
             fmt = "## {name}: {desc}\n{text}"
         else:
             fmt = "## {name}: {desc}"
-        for x in self.S:
-            print(fmt.format(**(x.dict())))
+        if name:
+            print(fmt.format(**(self._gets(name).dict())))
+        else:
+            for x in self.S:
+                print(fmt.format(**(x.dict())))
 
+    def gets(self, name):
+        return self._gets(name).dict()
+
+    def list(self):
+        ret = []
+        for x in self.S:
+            ret.append(x.dict())
+        return ret

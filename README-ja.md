@@ -37,6 +37,9 @@ python plodgate.py --host 127.0.0.1 --port 8000 \
 
 /v1/query
 
+./client.py http://localhost:8000/v1/query
+./client.py http://localhost:8000/v1/query?n=q2
+
 ## test
 
 

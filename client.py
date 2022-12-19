@@ -10,14 +10,18 @@ import json
 requests.packages.urllib3.disable_warnings()
 
 def worker_get(opt):
-    url, data = opt.url, opt.post_data
+    """
+    return (code, msg)
+    """
+    url = opt.url
     try:
         ret = requests.get(url, verify=False)
-        msg = True
+        code = ret.status_code
+        msg = ret.json()
     except Exception as e:
-        ret = -1
+        code = -1
         msg = str(e)
-    return (ret, msg)
+    return (code, msg)
 
 def worker_post(opt):
     url = opt.url
@@ -25,11 +29,12 @@ def worker_post(opt):
     headers = { "application": "json" }
     try:
         ret = requests.post(url, data=data, headers=headers, verify=False)
+        code = ret.json()
         msg = True
     except Exception as e:
-        ret = -1
+        code = -1
         msg = str(e)
-    return (ret, msg)
+    return (code, msg)
 
 # do requests.
 cftp = concurrent.futures.ThreadPoolExecutor
@@ -99,8 +104,13 @@ else:
 t_end = time.time()
 
 # print result.
-for i in range(len(results)):
-    print("{}: {}".format(1+i,results[i]))
+print("len=", len(results))
+for i in results:
+    code, msg = i
+    # XXX need to check the code
+    for m in msg:
+        print("## {name}: {desc}\n{text}".format(**m))
+
 
 print(t_end - t_start)
 

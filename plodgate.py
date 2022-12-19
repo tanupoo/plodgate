@@ -11,6 +11,7 @@ from plodgate_api import PatientInfoContainer, PatientInfo
 from graphdb_api import graphdb_make_epr, graphdb_insert, graphdb_query
 from ffhs2plod import ffhs2plod
 from sentences import Sentences
+import json
 import re
 import logging
 
@@ -21,9 +22,13 @@ app = FastAPI()
 re_date = re.compile("\d{4}-\d{2}-\d{2}")
 
 @app.get("/v1/query")
-async def task_get():
-    print(S)
-    return [{ "get": 1 }]
+async def task_get(
+        n: str = Query(None, description="query name")
+        ) -> dict:
+    if n:
+        return S.gets(n)
+    else:
+        return S.list()
 
 
 @app.post("/v1/query")
