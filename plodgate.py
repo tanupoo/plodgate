@@ -14,13 +14,19 @@ from sentences import Sentences
 import re
 import logging
 
-logger = logging.getLogger()
 
 app = FastAPI()
 
 
 re_date = re.compile("\d{4}-\d{2}-\d{2}")
+
 @app.get("/v1/query")
+async def task_get():
+    print(S)
+    return [{ "get": 1 }]
+
+
+@app.post("/v1/query")
 async def task_get(
         q: str = Query(Required,
                        description="Query name, identify the query template.",
@@ -59,13 +65,15 @@ async def request_validation_exception_handler(
 @app.post("/v1/insert")
 async def task_post(data: PatientInfoContainer):
     plod_text = ffhs2plod(data.__root__)
-    print(plod_text)
+    if opt.debug:
+        logger.debug(plod_text)
     #
     # XXX non async
-    if not opt.no_harm:
-        return graphdb_insert(url, plod_text)
-    else:
+    if opt.no_harm:
         return plod_text
+    else:
+        return graphdb_insert(url, plod_text)
+
 
 
 #
@@ -109,6 +117,16 @@ if __name__ == '__main__':
                     action="store_true", dest="debug",
                     help="enable debug mode.")
     opt = ap.parse_args()
+    #
+    logger = logging.getLogger("plodgate")
+    ch = logging.StreamHandler()
+    if opt.debug:
+        ch.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
+    logger.addHandler(ch)
+    #
+    if opt.no_harm:
+        logger.info(f"no harm")
     # set initial sentences.
     if opt.query_repository:
         S = Sentences(sentence_repository=opt.query_repository)
@@ -125,3 +143,5 @@ if __name__ == '__main__':
                            loop=loop,
                            debug=opt.debug))
     loop.run_until_complete(server.serve())
+
+
