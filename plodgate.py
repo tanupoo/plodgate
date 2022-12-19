@@ -24,32 +24,46 @@ re_date = re.compile("\d{4}-\d{2}-\d{2}")
 
 @app.get("/v1/query")
 async def task_get(
-        n: str = Query(None,
-                       description="Query name, identify the query template.")
+        qid: str = Query(None,
+                         description="Query name, identify the query template.")
         ) -> dict:
-    if n:
+    if qid:
         try:
-            return [S.gets(n)]
+            return [S.gets(qid)]
         except ValueError:
             return JSONResponse(status_code=404, content={})
     else:
         return S.list()
 
 
+"""
+#%name:q1
+#%desc:密閉のイベントを期間を指定
+PREFIX plod: <http://plod.info/rdf/>
+PREFIX time: <http://www.w3.org/2006/time#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+select * where {
+    ?s a plod:ClosedSpace ;
+    plod:time ?time .
+    ?time time:hasBeginning ?begin ;
+    time:hasEnd ?end .
+    filter (?begin >= %%PARAM_SINCE%%^^xsd:dateTime)
+    filter (?end >= %%PARAM_UNTIL%%^^xsd:dateTime)
+"""
 @app.post("/v1/query")
 async def task_get(
-        q: str = Query(Required,
-                       description="Query name, identify the query template.",
-                       regex="^[\w\d\-]+$"),
-        s: str = Query(None,
-                       description="Date string, tell data since this date.",
-                       regex="^\d{4}-\d{2}-\d{2}$"),
-        u: str = Query(None,
-                       description="Date string, tell data until this date.",
-                       regex="^\d{4}-\d{2}-\d{2}$"),
-        p: str = Query(Required,
-                       description="Patient ID, identify a patient.",
-                       regex="^[\w\d\-]+")):
+        qid: str = Query(Required,
+                         description="Query name, identify the query template.",
+                         regex="^[\w\d\-]+$"),
+        since: str = Query(None,
+                         description="Date string, tell data since this date.",
+                         regex="^\d{4}-\d{2}-\d{2}$"),
+        until: str = Query(None,
+                         description="Date string, tell data until this date.",
+                         regex="^\d{4}-\d{2}-\d{2}$"),
+        pid: str = Query(Required,
+                         description="Patient ID, identify a patient.",
+                         regex="^[\w\d\-]+")):
     # (q)uery_name=<name>
     # (s)ince=YYYY-mm-dd
     # (u)ntil=YYYY-mm-dd
