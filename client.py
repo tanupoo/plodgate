@@ -60,7 +60,9 @@ def split_even(nb_items: int, nb_slots: int) -> list:
             rest_n -= 1
     return items_per_slot
 
-# set options
+#
+# main
+#
 ap = argparse.ArgumentParser()
 ap.add_argument("url", action="store",
                 help="specify the URL.")
