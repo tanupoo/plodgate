@@ -27,6 +27,16 @@ python plodgate.py --host 127.0.0.1 --port 8000 \
     PLOD-test
 ```
 
+## insert
+
+/v1/insert
+
+./client.py -p test/test-list-1.json http://localhost:8000/v1/insert
+
+## query
+
+/v1/query
+
 ## test
 
 
