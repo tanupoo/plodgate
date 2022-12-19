@@ -2,7 +2,7 @@
 
 import asyncio
 import aiohttp
-from fastapi import FastAPI, Query, Request, Header
+from fastapi import FastAPI, Query, Request, Header, Body
 from fastapi import status as httpcode
 from fastapi.exceptions import RequestValidationError # debug
 from fastapi.responses import JSONResponse
@@ -22,8 +22,8 @@ app = FastAPI()
 
 re_date = re.compile("\d{4}-\d{2}-\d{2}")
 
-@app.get("/v1/query")
-async def task_get(
+@app.get("/v1/template")
+async def get_template(
         qid: str = Query(None,
                          description="Query name, identify the query template.")
         ) -> dict:
@@ -31,48 +31,49 @@ async def task_get(
         try:
             return [S.gets(qid)]
         except ValueError:
-            return JSONResponse(status_code=404, content={})
+            return JSONResponse(status_code=httpcode.HTTP_404_NOT_FOUND,
+                                content={})
     else:
         return S.list()
 
 
-"""
-#%name:q1
-#%desc:密閉のイベントを期間を指定
-PREFIX plod: <http://plod.info/rdf/>
-PREFIX time: <http://www.w3.org/2006/time#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-select * where {
-    ?s a plod:ClosedSpace ;
-    plod:time ?time .
-    ?time time:hasBeginning ?begin ;
-    time:hasEnd ?end .
-    filter (?begin >= %%PARAM_SINCE%%^^xsd:dateTime)
-    filter (?end >= %%PARAM_UNTIL%%^^xsd:dateTime)
-"""
-@app.post("/v1/query")
-async def task_get(
+@app.post("/v1/template")
+async def post_template(
         qid: str = Query(Required,
                          description="Query name, identify the query template.",
                          regex="^[\w\d\-]+$"),
+        pid: str = Query(Required,
+                         description="Patient ID, identify a patient.",
+                         regex="^[\w\d\-]+"),
         since: str = Query(None,
                          description="Date string, tell data since this date.",
                          regex="^\d{4}-\d{2}-\d{2}$"),
         until: str = Query(None,
                          description="Date string, tell data until this date.",
                          regex="^\d{4}-\d{2}-\d{2}$"),
-        pid: str = Query(Required,
-                         description="Patient ID, identify a patient.",
-                         regex="^[\w\d\-]+")):
-    # (q)uery_name=<name>
-    # (s)ince=YYYY-mm-dd
-    # (u)ntil=YYYY-mm-dd
-    # (p)atient=uuid
-    print(q)
-    print(s)
-    print(u)
-    print(p)
-    return [{ "get": 1 }]
+        ) -> dict:
+    print("pid:", pid)
+    template = S.gets(qid)["text"].splitlines()
+    query_data = []
+    for text in template:
+        if "%%PARAM_SINCE%%" in text:
+            if since:
+                query_data.append(text.replace("%%PARAM_SINCE%%", since))
+        elif "%%PARAM_UNTIL%%" in text:
+            if until:
+                query_data.append(text.replace("%%PARAM_UNTIL%%", until))
+        else:
+            query_data.append(text)
+    if opt.debug:
+        for text in query_data:
+            logger.debug(f"{text}")
+    #
+    # XXX get url from graphdb_epr
+    # XXX non async
+    if opt.no_harm:
+        return "\n".join(query_data)
+    else:
+        return graphdb_query(url, template)
 
 
 @app.exception_handler(RequestValidationError)
@@ -82,9 +83,23 @@ async def request_validation_exception_handler(
     content = jsonable_encoder(exc.errors())
     logger.error(f"Validation Error: {content}")
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=httpcode.HTTP_422_UNPROCESSABLE_ENTITY,
         content={"detail": content},
     )
+
+
+@app.post("/v1/query")
+async def post_query(query_data: str = Body(..., media_type="text/plain")):
+    if opt.debug:
+        logger.debug(query_data)
+    #
+    # XXX get url from graphdb_epr
+    # XXX non async
+    if opt.no_harm:
+        return query_data
+    else:
+        return graphdb_query(url, query_data)
+
 
 @app.post("/v1/insert")
 async def task_post(data: PatientInfoContainer):
@@ -92,6 +107,7 @@ async def task_post(data: PatientInfoContainer):
     if opt.debug:
         logger.debug(plod_text)
     #
+    # XXX get url from graphdb_epr
     # XXX non async
     if opt.no_harm:
         return plod_text

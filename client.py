@@ -23,10 +23,23 @@ def worker_get(opt):
         msg = str(e)
     return (code, msg)
 
-def worker_post(opt):
+def worker_post_json(opt):
     url = opt.url
     data = json.dumps(opt.post_data, ensure_ascii=False).encode()
     headers = { "application": "json" }
+    try:
+        ret = requests.post(url, data=data, headers=headers, verify=False)
+        code = ret.json()
+        msg = True
+    except Exception as e:
+        code = -1
+        msg = str(e)
+    return (code, msg)
+
+def worker_post_text(opt):
+    url = opt.url
+    data = json.dumps(opt.post_data, ensure_ascii=False).encode()
+    headers = { "plain": "text" }
     try:
         ret = requests.post(url, data=data, headers=headers, verify=False)
         code = ret.json()
@@ -71,8 +84,12 @@ def split_even(nb_items: int, nb_slots: int) -> list:
 ap = argparse.ArgumentParser()
 ap.add_argument("url", action="store",
                 help="specify the URL.")
-ap.add_argument("-p", action="store", dest="post_data_file",
-                help="specify data to post.")
+ap.add_argument("--insert", action="store", dest="insert_file",
+                help="specify the filename containing FFHS JSON data.")
+ap.add_argument("--query", action="store", dest="query_file",
+                help="specify the filename containing SPARQL data.")
+ap.add_argument("--template", action="store_true", dest="template",
+                help="specify to post the params for the template.")
 ap.add_argument("--nb-reqs", action="store", dest="nb_reqs",
                 type=int, default=1,
                 help="specify the number of requests.")
@@ -82,9 +99,15 @@ ap.add_argument("--nb-procs", action="store", dest="nb_procs",
                     "default is 1 process handles all requests.")
 opt = ap.parse_args()
 
-if opt.post_data_file:
-    worker = worker_post
-    opt.post_data = json.loads(open(opt.post_data_file).read())
+if opt.insert_file:
+    worker = worker_post_json
+    opt.post_data = json.loads(open(opt.insert_file).read())
+elif opt.query_file:
+    worker = worker_post_text
+    opt.post_data = open(opt.query_file).read()
+elif opt.template:
+    worker = worker_post_json
+    opt.post_data = {}
 else:
     worker = worker_get
 

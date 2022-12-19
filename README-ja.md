@@ -31,14 +31,19 @@ python plodgate.py --host 127.0.0.1 --port 8000 \
 
 /v1/insert
 
-./client.py -p test/test-list-1.json http://localhost:8000/v1/insert
+./client.py --insert test/test-list-1.json http://localhost:8000/v1/insert
 
 ## query
 
 /v1/query
 
-./client.py http://localhost:8000/v1/query
-./client.py http://localhost:8000/v1/query?n=q2
+./client.py --query queries/query4.txt  http://localhost:8000/v1/query
+
+## template
+
+./client.py http://localhost:8000/v1/template
+./client.py http://localhost:8000/v1/template?qid=q1
+./client.py --template 'http://localhost:8000/v1/template?qid=q1&pid=taro&since=2022-12-01'
 
 ## test
 
