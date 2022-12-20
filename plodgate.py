@@ -20,7 +20,17 @@ import logging
 app = FastAPI()
 
 
-re_date = re.compile("\d{4}-\d{2}-\d{2}")
+@app.exception_handler(RequestValidationError)
+async def request_validation_exception_handler(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
+    content = jsonable_encoder(exc.errors())
+    logger.error(f"Validation Error: {content}")
+    return JSONResponse(
+        status_code=httpcode.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": content},
+    )
+
 
 @app.get("/v1/template")
 async def get_template(
@@ -74,18 +84,6 @@ async def post_template(
         return "\n".join(query_data)
     else:
         return graphdb_query(url, template)
-
-
-@app.exception_handler(RequestValidationError)
-async def request_validation_exception_handler(
-    request: Request, exc: RequestValidationError
-) -> JSONResponse:
-    content = jsonable_encoder(exc.errors())
-    logger.error(f"Validation Error: {content}")
-    return JSONResponse(
-        status_code=httpcode.HTTP_422_UNPROCESSABLE_ENTITY,
-        content={"detail": content},
-    )
 
 
 @app.post("/v1/query")
