@@ -16,6 +16,9 @@ import json
 import re
 import logging
 
+"""
+XXX graphdb_query is not async.
+"""
 
 app = FastAPI()
 
@@ -78,8 +81,7 @@ async def post_template(
         for text in query_data:
             logger.debug(f"{text}")
     #
-    # XXX get url from graphdb_epr
-    # XXX non async
+    url = graphdb_epr["GET"]
     if opt.no_harm:
         return "\n".join(query_data)
     else:
@@ -91,8 +93,7 @@ async def post_query(query_data: str = Body(..., media_type="text/plain")):
     if opt.debug:
         logger.debug(query_data)
     #
-    # XXX get url from graphdb_epr
-    # XXX non async
+    url = graphdb_epr["GET"]
     if opt.no_harm:
         return query_data
     else:
@@ -105,11 +106,10 @@ async def task_post(data: PatientInfoContainer):
     if opt.debug:
         logger.debug(plod_text)
     #
-    # XXX get url from graphdb_epr
-    # XXX non async
     if opt.no_harm:
         return plod_text
     else:
+        url = graphdb_epr["POST"]
         return graphdb_insert(url, plod_text)
 
 
