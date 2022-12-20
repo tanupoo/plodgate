@@ -1,16 +1,6 @@
 plodgate
 ========
 
-## FFHSからPLODへの入力チェック
-
-plodgate-api.py: PatientInfoContainerモデルで定義する。
-
-```
-python ffhs2plod.py test/test-test-1.json
-python test/test-ffhs2plod.py
-pytest test/test-ffhs2plod.py
-```
-
 ## plodgate
 
 起動
@@ -62,6 +52,4 @@ curl -X POST 'http://localhost:8000/v1/template?qid=q1&pid=taro&since=2022-12-01
 ```
 
 ## test
-
-
 
