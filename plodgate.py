@@ -95,7 +95,14 @@ async def post_query(query_data: str = Body(..., media_type="text/plain")):
     #
     url = graphdb_epr["GET"]
     if opt.no_harm:
-        return query_data
+        result = []
+        import random
+        for i in range(random.randint(0,2)):
+            result.append({
+                    "event_id": round(random.random()*10e6),
+                    "risk_level": random.randint(1, 3)
+                    })
+        return { "result": result }
     else:
         return graphdb_query(url, query_data)
 
