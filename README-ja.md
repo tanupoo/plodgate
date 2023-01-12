@@ -1,6 +1,17 @@
 plodgate
 ========
 
+## Architecture
+
+```
+|client|<-- -->|plodgate|<-- -->|GraphDB|
+```
+
+```
+A: --host, --port
+B: --graphdb-addr, --graphdb-port
+```
+
 ## plodgate
 
 起動
@@ -10,7 +21,7 @@ python plodgate.py --host 127.0.0.1 --port 8000 \
     --graphdb-addr 127.0.0.1 --graphdb-port 7200 \
     --query-repository queries \
     --no-harm --debug \
-    PLOD-test
+    PLOD-DB
 ```
 
 ## insert
