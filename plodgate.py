@@ -165,9 +165,11 @@ if __name__ == '__main__':
     #
     logger = logging.getLogger("plodgate")
     ch = logging.StreamHandler()
+    uvicorn_log_level = None
     if opt.debug:
         ch.setLevel(logging.DEBUG)
         logger.setLevel(logging.DEBUG)
+        uvicorn_log_level = "debug"
     logger.addHandler(ch)
     #
     if opt.no_harm:
@@ -186,7 +188,7 @@ if __name__ == '__main__':
                            host=opt.server_addr,
                            port=opt.server_port,
                            loop=loop,
-                           debug=opt.debug))
+                           log_level=uvicorn_log_level))
     loop.run_until_complete(server.serve())
 
 
