@@ -40,6 +40,8 @@ async def get_template(
         qid: str = Query(None,
                          description="Query name, identify the query template.")
         ) -> dict:
+    if S is None:
+        return JSONResponse(content={})
     if qid:
         try:
             return [S.gets(qid)]
