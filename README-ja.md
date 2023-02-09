@@ -1,6 +1,13 @@
 plodgate
 ========
 
+## requirement
+
+- aiohttp
+- fastapi
+- SPARQLWrapper
+- uvicorn
+
 ## Architecture
 
 ```
