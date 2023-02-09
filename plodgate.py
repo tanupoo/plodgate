@@ -157,7 +157,7 @@ if __name__ == '__main__':
                     help="directory name containing queries.")
     ap.add_argument("--no-harm",
                     action="store_true", dest="no_harm",
-                    help="enable debug mode.")
+                    help="specify not to send any packet to GraphDB for debug.")
     ap.add_argument("--debug", "-d",
                     action="store_true", dest="debug",
                     help="enable debug mode.")
