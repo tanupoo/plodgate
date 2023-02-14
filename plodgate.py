@@ -14,7 +14,7 @@ from ffhs2plod import ffhs2plod
 from sentences import Sentences
 import json
 import re
-import logging
+from get_logger import get_logger
 
 """
 XXX graphdb_query is not async.
@@ -157,6 +157,9 @@ if __name__ == '__main__':
     ap.add_argument("--query-repository", "-S",
                     action="store", dest="query_repository",
                     help="directory name containing queries.")
+    ap.add_argument("--log-file", "-l",
+                    action="store", dest="log_file",
+                    help="specify a filename for logging.")
     ap.add_argument("--no-harm",
                     action="store_true", dest="no_harm",
                     help="specify not to send any packet to GraphDB for debug.")
@@ -165,14 +168,7 @@ if __name__ == '__main__':
                     help="enable debug mode.")
     opt = ap.parse_args()
     #
-    logger = logging.getLogger("plodgate")
-    ch = logging.StreamHandler()
-    uvicorn_log_level = None
-    if opt.debug:
-        ch.setLevel(logging.DEBUG)
-        logger.setLevel(logging.DEBUG)
-        uvicorn_log_level = "debug"
-    logger.addHandler(ch)
+    logger = get_logger("plodgate", log_file=opt.log_file, debug_mode=opt.debug)
     #
     if opt.no_harm:
         logger.info(f"no harm")
@@ -190,7 +186,5 @@ if __name__ == '__main__':
                            host=opt.server_addr,
                            port=opt.server_port,
                            loop=loop,
-                           log_level=uvicorn_log_level))
+                           log_level="debug" if opt.debug else None))
     loop.run_until_complete(server.serve())
-
-
